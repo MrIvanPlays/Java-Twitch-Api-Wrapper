@@ -40,7 +40,7 @@ public class Twitch {
      * @param jsonMapper the jackson json mapper to use
      */
     public Twitch(OkHttpClient httpClient, ObjectMapper jsonMapper) {
-        authenticator = new Authenticator(DEFAULT_BASE_URL);
+        authenticator = new Authenticator("https://id.twitch.tv");
         // Instantiate resource connectors
         AsyncHttpClient asyncHttpClient = new AsyncHttpClient(httpClient);
         resources = new HashMap<>();
