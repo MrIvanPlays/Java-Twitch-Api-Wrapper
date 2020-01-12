@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mb3364.twitch.api.resources.AbstractResource;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -25,7 +26,8 @@ public class ChannelNameToID {
 
     public void getId(String channelName, ObjectMapper objectMapper, IdHttpResponseHandler responseHandler) {
         if (cache.containsKey(channelName)) {
-            cache.get(channelName);
+            responseHandler.onSuccess(200, new HashMap<>(), cache.get(channelName));
+            return;
         }
         RequestParams requestParams = new RequestParams();
         requestParams.put("login", channelName);
