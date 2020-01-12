@@ -28,7 +28,7 @@ import okhttp3.OkHttpClient;
 public class Twitch {
 
     public static final String DEFAULT_BASE_URL = "https://api.twitch.tv/kraken";
-    public static final int DEFAULT_API_VERSION = 3;
+    public static final int DEFAULT_API_VERSION = 5;
     private String clientId; // User's app client Id
     private Authenticator authenticator;
     private Map<String, AbstractResource> resources;
