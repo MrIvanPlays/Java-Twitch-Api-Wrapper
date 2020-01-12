@@ -14,6 +14,7 @@ import com.mb3364.twitch.api.resources.TeamsResource;
 import com.mb3364.twitch.api.resources.UsersResource;
 import com.mb3364.twitch.api.resources.VideosResource;
 import com.mrivanplays.twitch.api.AsyncHttpClient;
+import com.mrivanplays.twitch.api.ChannelNameToID;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,17 +44,18 @@ public class Twitch {
         authenticator = new Authenticator("https://id.twitch.tv");
         // Instantiate resource connectors
         AsyncHttpClient asyncHttpClient = new AsyncHttpClient(httpClient);
+        ChannelNameToID channelNameToID = new ChannelNameToID(asyncHttpClient);
         resources = new HashMap<>();
-        resources.put("channels", new ChannelsResource(asyncHttpClient, jsonMapper, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
-        resources.put("chat", new ChatResource(asyncHttpClient, jsonMapper, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
-        resources.put("games", new GamesResource(asyncHttpClient, jsonMapper, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
-        resources.put("ingests", new IngestsResource(asyncHttpClient, jsonMapper, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
-        resources.put("root", new RootResource(asyncHttpClient, jsonMapper, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
-        resources.put("search", new SearchResource(asyncHttpClient, jsonMapper, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
-        resources.put("streams", new StreamsResource(asyncHttpClient, jsonMapper, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
-        resources.put("teams", new TeamsResource(asyncHttpClient, jsonMapper, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
-        resources.put("users", new UsersResource(asyncHttpClient, jsonMapper, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
-        resources.put("videos", new VideosResource(asyncHttpClient, jsonMapper, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
+        resources.put("channels", new ChannelsResource(asyncHttpClient, jsonMapper, channelNameToID, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
+        resources.put("chat", new ChatResource(asyncHttpClient, jsonMapper, channelNameToID, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
+        resources.put("games", new GamesResource(asyncHttpClient, jsonMapper, channelNameToID, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
+        resources.put("ingests", new IngestsResource(asyncHttpClient, jsonMapper, channelNameToID, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
+        resources.put("root", new RootResource(asyncHttpClient, jsonMapper, channelNameToID, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
+        resources.put("search", new SearchResource(asyncHttpClient, jsonMapper, channelNameToID, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
+        resources.put("streams", new StreamsResource(asyncHttpClient, jsonMapper, channelNameToID, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
+        resources.put("teams", new TeamsResource(asyncHttpClient, jsonMapper, channelNameToID, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
+        resources.put("users", new UsersResource(asyncHttpClient, jsonMapper, channelNameToID, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
+        resources.put("videos", new VideosResource(asyncHttpClient, jsonMapper, channelNameToID, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
     }
 
     /**

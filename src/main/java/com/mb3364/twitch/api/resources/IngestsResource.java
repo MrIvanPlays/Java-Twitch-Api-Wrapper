@@ -4,21 +4,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mb3364.twitch.api.handlers.IngestsResponseHandler;
 import com.mb3364.twitch.api.models.Ingests;
 import com.mrivanplays.twitch.api.AsyncHttpClient;
+import com.mrivanplays.twitch.api.ChannelNameToID;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
 /**
- * The {@link IngestsResource} provides the functionality
- * to access the <code>/ingests</code> endpoints of the Twitch API.
+ * The {@link IngestsResource} provides the functionality to access the <code>/ingests</code> endpoints of the Twitch
+ * API.
  *
  * @author Matthew Bell
  */
 public class IngestsResource extends AbstractResource {
 
-    public IngestsResource(AsyncHttpClient httpClient, ObjectMapper objectMapper, String baseUrl, int apiVersion) {
-        super(httpClient, objectMapper, baseUrl, apiVersion);
+    public IngestsResource(AsyncHttpClient httpClient, ObjectMapper objectMapper, ChannelNameToID channelNameToID, String baseUrl, int apiVersion) {
+        super(httpClient, objectMapper, channelNameToID, baseUrl, apiVersion);
     }
 
     /**

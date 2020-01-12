@@ -6,6 +6,7 @@ import com.mb3364.twitch.api.handlers.TeamsResponseHandler;
 import com.mb3364.twitch.api.models.Team;
 import com.mb3364.twitch.api.models.Teams;
 import com.mrivanplays.twitch.api.AsyncHttpClient;
+import com.mrivanplays.twitch.api.ChannelNameToID;
 import com.mrivanplays.twitch.api.RequestParams;
 
 import java.io.IOException;
@@ -19,8 +20,8 @@ import java.util.Map;
  */
 public class TeamsResource extends AbstractResource {
 
-    public TeamsResource(AsyncHttpClient httpClient, ObjectMapper objectMapper, String baseUrl, int apiVersion) {
-        super(httpClient, objectMapper, baseUrl, apiVersion);
+    public TeamsResource(AsyncHttpClient httpClient, ObjectMapper objectMapper, ChannelNameToID channelNameToID, String baseUrl, int apiVersion) {
+        super(httpClient, objectMapper, channelNameToID, baseUrl, apiVersion);
     }
 
     /**

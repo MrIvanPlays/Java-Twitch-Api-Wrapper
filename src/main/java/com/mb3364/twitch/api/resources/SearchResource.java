@@ -6,6 +6,7 @@ import com.mb3364.twitch.api.handlers.GamesResponseHandler;
 import com.mb3364.twitch.api.handlers.StreamsResponseHandler;
 import com.mb3364.twitch.api.models.SearchResultContainer;
 import com.mrivanplays.twitch.api.AsyncHttpClient;
+import com.mrivanplays.twitch.api.ChannelNameToID;
 import com.mrivanplays.twitch.api.RequestParams;
 
 import java.io.IOException;
@@ -13,15 +14,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The {@link SearchResource} provides the functionality
- * to access the <code>/search</code> endpoints of the Twitch API.
+ * The {@link SearchResource} provides the functionality to access the <code>/search</code> endpoints of the Twitch
+ * API.
  *
  * @author Matthew Bell
  */
 public class SearchResource extends AbstractResource {
 
-    public SearchResource(AsyncHttpClient httpClient, ObjectMapper objectMapper, String baseUrl, int apiVersion) {
-        super(httpClient, objectMapper, baseUrl, apiVersion);
+    public SearchResource(AsyncHttpClient httpClient, ObjectMapper objectMapper, ChannelNameToID channelNameToID, String baseUrl, int apiVersion) {
+        super(httpClient, objectMapper, channelNameToID, baseUrl, apiVersion);
     }
 
     /**

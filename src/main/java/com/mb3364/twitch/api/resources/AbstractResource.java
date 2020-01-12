@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.mb3364.twitch.api.handlers.BaseFailureHandler;
 import com.mb3364.twitch.api.models.Error;
 import com.mrivanplays.twitch.api.AsyncHttpClient;
+import com.mrivanplays.twitch.api.ChannelNameToID;
+import com.mrivanplays.twitch.api.IdHttpResponseHandler;
 import com.mrivanplays.twitch.api.StringHttpResponseHandler;
 
 import java.io.IOException;
@@ -22,6 +24,7 @@ public abstract class AbstractResource {
     protected final ObjectMapper objectMapper; // can reuse
     protected final AsyncHttpClient http; // can reuse
     private final String baseUrl; // Base url for twitch rest api
+    private final ChannelNameToID channelNameToID;
 
     /**
      * Construct a resource using the Twitch API base URL and specified API version.
@@ -31,11 +34,12 @@ public abstract class AbstractResource {
      * @param baseUrl      the base URL of the Twitch API
      * @param apiVersion   the requested version of the Twitch API
      */
-    protected AbstractResource(AsyncHttpClient httpClient, ObjectMapper objectMapper, String baseUrl, int apiVersion) {
+    protected AbstractResource(AsyncHttpClient httpClient, ObjectMapper objectMapper, ChannelNameToID channelNameToID, String baseUrl, int apiVersion) {
         this.http = httpClient;
         this.objectMapper = objectMapper;
+        this.channelNameToID = channelNameToID;
         this.baseUrl = baseUrl;
-        http.setHeader("ACCEPT", "application/vnd.twitchtv.v" + apiVersion + "+json"); // Specify API version
+        http.setHeader("Accept", "application/vnd.twitchtv.v" + apiVersion + "+json"); // Specify API version
         configureObjectMapper();
     }
 
@@ -90,11 +94,15 @@ public abstract class AbstractResource {
         return http;
     }
 
+    public void getId(String username, IdHttpResponseHandler responseHandler) {
+        channelNameToID.getId(username, objectMapper, responseHandler);
+    }
+
     /**
      * Handles HTTP response's from the Twitch API.
      * <p>Since all Http failure logic is the same, we handle it all in one place: here.</p>
      */
-    protected static abstract class TwitchHttpResponseHandler extends StringHttpResponseHandler {
+    public static abstract class TwitchHttpResponseHandler extends StringHttpResponseHandler {
 
         private BaseFailureHandler apiHandler;
         private ObjectMapper objectMapper;

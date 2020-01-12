@@ -1,11 +1,10 @@
 package com.mb3364.twitch.api.auth;
 
 /**
- * When requesting authorization from users, the scope parameter allows you to specify
- * which permissions your app requires. These scopes are ties to the access token you
- * receive upon a successful authorization. Without specifying scopes, your app only has
- * access to basic information about the authenticated user. You may specify any or all
- * of the following scopes.
+ * When requesting authorization from users, the scope parameter allows you to specify which permissions your app
+ * requires. These scopes are ties to the access token you receive upon a successful authorization. Without specifying
+ * scopes, your app only has access to basic information about the authenticated user. You may specify any or all of the
+ * following scopes.
  */
 public enum Scopes {
 
@@ -50,6 +49,26 @@ public enum Scopes {
     CHANNEL_STREAM("channel_stream"),
 
     /**
+     * Manage a user's collections (of videos)
+     */
+    COLLECTIONS_EDIT("collections_edit"),
+
+    /**
+     * Manage a user's communities
+     */
+    COMMUNITIES_EDIT("communities_edit"),
+
+    /**
+     * Manage community moderators
+     */
+    COMMUNITIES_MODERATE("communities_moderate"),
+
+    /**
+     * Use OpenID connect authentication
+     */
+    OPENID("openid"),
+
+    /**
      * Read access to all subscribers to your channel.
      */
     CHANNEL_SUBSCRIPTIONS("channel_subscriptions"),
@@ -62,12 +81,7 @@ public enum Scopes {
     /**
      * Read access to check if a user is subscribed to your channel.
      */
-    CHANNEL_CHECK_SUBSCRIPTION("channel_check_subscription"),
-
-    /**
-     * Ability to log into chat and send messages.
-     */
-    CHAT_LOGIN("chat_login");
+    CHANNEL_CHECK_SUBSCRIPTION("channel_check_subscription");
 
     private String key;
 
@@ -76,8 +90,8 @@ public enum Scopes {
     }
 
     /**
-     * Combine <code>Scopes</code> into a '+' separated <code>String</code>.
-     * This is the required input format for twitch.tv
+     * Combine <code>Scopes</code> into a '+' separated <code>String</code>. This is the required input format for
+     * twitch.tv
      *
      * @param scopes <code>Scopes</code> to combine.
      * @return <code>String</code> representing '+' separated list of <code>Scopes</code>

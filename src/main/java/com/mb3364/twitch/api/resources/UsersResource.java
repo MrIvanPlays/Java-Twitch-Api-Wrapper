@@ -17,6 +17,8 @@ import com.mb3364.twitch.api.models.UserFollow;
 import com.mb3364.twitch.api.models.UserFollows;
 import com.mb3364.twitch.api.models.UserSubscription;
 import com.mrivanplays.twitch.api.AsyncHttpClient;
+import com.mrivanplays.twitch.api.ChannelNameToID;
+import com.mrivanplays.twitch.api.IdHttpResponseHandler;
 import com.mrivanplays.twitch.api.RequestParams;
 
 import java.io.IOException;
@@ -24,15 +26,14 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The {@link UsersResource} provides the functionality
- * to access the <code>/users</code> endpoints of the Twitch API.
+ * The {@link UsersResource} provides the functionality to access the <code>/users</code> endpoints of the Twitch API.
  *
  * @author Matthew Bell
  */
 public class UsersResource extends AbstractResource {
 
-    public UsersResource(AsyncHttpClient httpClient, ObjectMapper objectMapper, String baseUrl, int apiVersion) {
-        super(httpClient, objectMapper, baseUrl, apiVersion);
+    public UsersResource(AsyncHttpClient httpClient, ObjectMapper objectMapper, ChannelNameToID channelNameToID, String baseUrl, int apiVersion) {
+        super(httpClient, objectMapper, channelNameToID, baseUrl, apiVersion);
     }
 
     /**
@@ -42,24 +43,39 @@ public class UsersResource extends AbstractResource {
      * @param handler the response handler
      */
     public void get(final String user, final UserResponseHandler handler) {
-        String url = String.format("%s/users/%s", getBaseUrl(), user);
+        getId(user, new IdHttpResponseHandler() {
 
-        http.get(url, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
-                try {
-                    User value = objectMapper.readValue(content, User.class);
-                    handler.onSuccess(value);
-                } catch (IOException e) {
-                    handler.onFailure(e);
-                }
+                String url = String.format("%s/users/%s", getBaseUrl(), content);
+
+                http.get(url, new TwitchHttpResponseHandler(handler, objectMapper) {
+                    @Override
+                    public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
+                        try {
+                            User value = objectMapper.readValue(content, User.class);
+                            handler.onSuccess(value);
+                        } catch (IOException e) {
+                            handler.onFailure(e);
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(int statusCode, String statusMessage, String errorMessage) {
+                handler.onFailure(statusCode, statusMessage, errorMessage);
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                handler.onFailure(throwable);
             }
         });
     }
 
     /**
-     * Returns the authenticated {@link User} object.
-     * Authenticated, required scope: {@link Scopes#USER_READ}
+     * Returns the authenticated {@link User} object. Authenticated, required scope: {@link Scopes#USER_READ}
      *
      * @param handler the response handler
      */
@@ -80,32 +96,64 @@ public class UsersResource extends AbstractResource {
     }
 
     /**
-     * Returns the channel subscription that the user subscribes to.
-     * Authenticated, required scope: {@link Scopes#USER_SUBSCRIPTIONS}
+     * Returns the channel subscription that the user subscribes to. Authenticated, required scope: {@link
+     * Scopes#USER_SUBSCRIPTIONS}
      *
      * @param user    the authenticated user's name
      * @param channel the channel name of the subscription
      * @param handler the response handler
      */
     public void getSubscription(final String user, final String channel, final UserSubscriptionResponseHandler handler) {
-        String url = String.format("%s/users/%s/subscriptions/%s", getBaseUrl(), user, channel);
+        getId(user, new IdHttpResponseHandler() {
 
-        http.get(url, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
-            public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
-                try {
-                    UserSubscription value = objectMapper.readValue(content, UserSubscription.class);
-                    handler.onSuccess(value);
-                } catch (IOException e) {
-                    handler.onFailure(e);
-                }
+            public void onSuccess(int statusCode, Map<String, List<String>> headers, String userId) {
+                getId(channel, new IdHttpResponseHandler() {
+
+                    @Override
+                    public void onSuccess(int statusCode, Map<String, List<String>> headers, String channelId) {
+                        String url = String.format("%s/users/%s/subscriptions/%s", getBaseUrl(), userId, channelId);
+
+                        http.get(url, new TwitchHttpResponseHandler(handler, objectMapper) {
+                            @Override
+                            public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
+                                try {
+                                    UserSubscription value = objectMapper.readValue(content, UserSubscription.class);
+                                    handler.onSuccess(value);
+                                } catch (IOException e) {
+                                    handler.onFailure(e);
+                                }
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, String statusMessage, String errorMessage) {
+                        handler.onFailure(statusCode, statusMessage, errorMessage);
+                    }
+
+                    @Override
+                    public void onFailure(Throwable throwable) {
+                        handler.onFailure(throwable);
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(int statusCode, String statusMessage, String errorMessage) {
+                handler.onFailure(statusCode, statusMessage, errorMessage);
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                handler.onFailure(throwable);
             }
         });
     }
 
     /**
-     * Returns a {@link UserFollows} object that contains a list of {@link UserFollow}
-     * objects representing channels the user is following.
+     * Returns a {@link UserFollows} object that contains a list of {@link UserFollow} objects representing channels the
+     * user is following.
      *
      * @param user    the user's name
      * @param params  the optional request parameters:
@@ -120,24 +168,40 @@ public class UsersResource extends AbstractResource {
      * @param handler the response handler
      */
     public void getFollows(final String user, final RequestParams params, final UserFollowsResponseHandler handler) {
-        String url = String.format("%s/users/%s/follows/channels", getBaseUrl(), user);
+        getId(user, new IdHttpResponseHandler() {
 
-        http.get(url, params, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
-                try {
-                    UserFollows value = objectMapper.readValue(content, UserFollows.class);
-                    handler.onSuccess(value.getTotal(), value.getFollows());
-                } catch (IOException e) {
-                    handler.onFailure(e);
-                }
+                String url = String.format("%s/users/%s/follows/channels", getBaseUrl(), content);
+
+                http.get(url, params, new TwitchHttpResponseHandler(handler, objectMapper) {
+                    @Override
+                    public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
+                        try {
+                            UserFollows value = objectMapper.readValue(content, UserFollows.class);
+                            handler.onSuccess(value.getTotal(), value.getFollows());
+                        } catch (IOException e) {
+                            handler.onFailure(e);
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(int statusCode, String statusMessage, String errorMessage) {
+                handler.onFailure(statusCode, statusMessage, errorMessage);
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                handler.onFailure(throwable);
             }
         });
     }
 
     /**
-     * Returns a {@link UserFollows} object that contains a list of {@link UserFollow}
-     * objects representing channels the user is following.
+     * Returns a {@link UserFollows} object that contains a list of {@link UserFollow} objects representing channels the
+     * user is following.
      *
      * @param user    the user's name
      * @param handler the response handler
@@ -154,52 +218,117 @@ public class UsersResource extends AbstractResource {
      * @param handler the response handler
      */
     public void getFollow(final String user, final String channel, final UserFollowResponseHandler handler) {
-        String url = String.format("%s/users/%s/follows/channels/%s", getBaseUrl(), user, channel);
+        getId(user, new IdHttpResponseHandler() {
 
-        http.get(url, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
-            public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
-                try {
-                    UserFollow value = objectMapper.readValue(content, UserFollow.class);
-                    handler.onSuccess(value);
-                } catch (IOException e) {
-                    handler.onFailure(e);
-                }
+            public void onSuccess(int statusCode, Map<String, List<String>> headers, String userId) {
+                getId(channel, new IdHttpResponseHandler() {
+
+                    @Override
+                    public void onSuccess(int statusCode, Map<String, List<String>> headers, String channelId) {
+                        String url = String.format("%s/users/%s/follows/channels/%s", getBaseUrl(), userId, channelId);
+
+                        http.get(url, new TwitchHttpResponseHandler(handler, objectMapper) {
+                            @Override
+                            public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
+                                try {
+                                    UserFollow value = objectMapper.readValue(content, UserFollow.class);
+                                    handler.onSuccess(value);
+                                } catch (IOException e) {
+                                    handler.onFailure(e);
+                                }
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, String statusMessage, String errorMessage) {
+                        handler.onFailure(statusCode, statusMessage, errorMessage);
+                    }
+
+                    @Override
+                    public void onFailure(Throwable throwable) {
+                        handler.onFailure(throwable);
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(int statusCode, String statusMessage, String errorMessage) {
+                handler.onFailure(statusCode, statusMessage, errorMessage);
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                handler.onFailure(throwable);
             }
         });
     }
 
     /**
-     * Follow a channel. Must be authenticated as the <code>user</code>.
-     * Authenticated, required scope: {@link Scopes#USER_FOLLOWS_EDIT}
+     * Follow a channel. Must be authenticated as the <code>user</code>. Authenticated, required scope: {@link
+     * Scopes#USER_FOLLOWS_EDIT}
      *
      * @param user                the authenticated user
      * @param channel             the channel to follow
-     * @param enableNotifications receive email/push notifications when channel goes live. Default is <code>false</code>.
+     * @param enableNotifications receive email/push notifications when channel goes live. Default is
+     *                            <code>false</code>.
      * @param handler             the response handler
      */
     public void follow(final String user, final String channel, final boolean enableNotifications, final UserFollowResponseHandler handler) {
-        String url = String.format("%s/users/%s/follows/channels/%s", getBaseUrl(), user, channel);
+        getId(user, new IdHttpResponseHandler() {
 
-        RequestParams params = new RequestParams();
-        params.put("notifications", Boolean.toString(enableNotifications));
-
-        http.put(url, params, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
-            public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
-                try {
-                    UserFollow value = objectMapper.readValue(content, UserFollow.class);
-                    handler.onSuccess(value);
-                } catch (IOException e) {
-                    handler.onFailure(e);
-                }
+            public void onSuccess(int statusCode, Map<String, List<String>> headers, String userId) {
+                getId(channel, new IdHttpResponseHandler() {
+
+                    @Override
+                    public void onSuccess(int statusCode, Map<String, List<String>> headers, String channelId) {
+                        String url = String.format("%s/users/%s/follows/channels/%s", getBaseUrl(), userId, channelId);
+
+                        RequestParams params = new RequestParams();
+                        params.put("notifications", Boolean.toString(enableNotifications));
+
+                        http.put(url, params, new TwitchHttpResponseHandler(handler, objectMapper) {
+                            @Override
+                            public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
+                                try {
+                                    UserFollow value = objectMapper.readValue(content, UserFollow.class);
+                                    handler.onSuccess(value);
+                                } catch (IOException e) {
+                                    handler.onFailure(e);
+                                }
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, String statusMessage, String errorMessage) {
+                        handler.onFailure(statusCode, statusMessage, errorMessage);
+                    }
+
+                    @Override
+                    public void onFailure(Throwable throwable) {
+                        handler.onFailure(throwable);
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(int statusCode, String statusMessage, String errorMessage) {
+                handler.onFailure(statusCode, statusMessage, errorMessage);
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                handler.onFailure(throwable);
             }
         });
     }
 
     /**
-     * Follow a channel. Must be authenticated as the <code>user</code>.
-     * Authenticated, required scope: {@link Scopes#USER_FOLLOWS_EDIT}
+     * Follow a channel. Must be authenticated as the <code>user</code>. Authenticated, required scope: {@link
+     * Scopes#USER_FOLLOWS_EDIT}
      *
      * @param user    the authenticated user
      * @param channel the channel to follow
@@ -210,27 +339,58 @@ public class UsersResource extends AbstractResource {
     }
 
     /**
-     * Unfollow a channel. Must be authenticated as the <code>user</code>.
-     * Authenticated, required scope: {@link Scopes#USER_FOLLOWS_EDIT}
+     * Unfollow a channel. Must be authenticated as the <code>user</code>. Authenticated, required scope: {@link
+     * Scopes#USER_FOLLOWS_EDIT}
      *
      * @param user    the authenticated user
      * @param channel the channel to unfollow
      * @param handler the response handler
      */
     public void unfollow(final String user, final String channel, final UserUnfollowResponseHandler handler) {
-        String url = String.format("%s/users/%s/follows/channels/%s", getBaseUrl(), user, channel);
+        getId(user, new IdHttpResponseHandler() {
 
-        http.delete(url, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
-            public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
-                handler.onSuccess();
+            public void onSuccess(int statusCode, Map<String, List<String>> headers, String userId) {
+                getId(channel, new IdHttpResponseHandler() {
+
+                    @Override
+                    public void onSuccess(int statusCode, Map<String, List<String>> headers, String channelId) {
+                        String url = String.format("%s/users/%s/follows/channels/%s", getBaseUrl(), userId, channelId);
+
+                        http.delete(url, new TwitchHttpResponseHandler(handler, objectMapper) {
+                            @Override
+                            public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
+                                handler.onSuccess();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, String statusMessage, String errorMessage) {
+                        handler.onFailure(statusCode, statusMessage, errorMessage);
+                    }
+
+                    @Override
+                    public void onFailure(Throwable throwable) {
+                        handler.onFailure(throwable);
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(int statusCode, String statusMessage, String errorMessage) {
+                handler.onFailure(statusCode, statusMessage, errorMessage);
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                handler.onFailure(throwable);
             }
         });
     }
 
     /**
-     * Returns a list of {@link Block} objects on <code>User</code>'s block list.
-     * List sorted by recency, newest first.
+     * Returns a list of {@link Block} objects on <code>User</code>'s block list. List sorted by recency, newest first.
      * Authenticated, required scope: {@link Scopes#USER_BLOCKS_READ}
      *
      * @param user    the authenticated user
@@ -242,24 +402,39 @@ public class UsersResource extends AbstractResource {
      * @param handler the response handler
      */
     public void getBlocks(final String user, final RequestParams params, final BlocksResponseHandler handler) {
-        String url = String.format("%s/users/%s/blocks", getBaseUrl(), user);
+        getId(user, new IdHttpResponseHandler() {
 
-        http.get(url, params, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
-                try {
-                    Blocks value = objectMapper.readValue(content, Blocks.class);
-                    handler.onSuccess(value.getBlocks());
-                } catch (IOException e) {
-                    handler.onFailure(e);
-                }
+                String url = String.format("%s/users/%s/blocks", getBaseUrl(), content);
+
+                http.get(url, params, new TwitchHttpResponseHandler(handler, objectMapper) {
+                    @Override
+                    public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
+                        try {
+                            Blocks value = objectMapper.readValue(content, Blocks.class);
+                            handler.onSuccess(value.getBlocks());
+                        } catch (IOException e) {
+                            handler.onFailure(e);
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(int statusCode, String statusMessage, String errorMessage) {
+                handler.onFailure(statusCode, statusMessage, errorMessage);
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                handler.onFailure(throwable);
             }
         });
     }
 
     /**
-     * Returns a list of {@link Block} objects on <code>User</code>'s block list.
-     * List sorted by recency, newest first.
+     * Returns a list of {@link Block} objects on <code>User</code>'s block list. List sorted by recency, newest first.
      * Authenticated, required scope: {@link Scopes#USER_BLOCKS_READ}
      *
      * @param user    the authenticated user
@@ -270,44 +445,108 @@ public class UsersResource extends AbstractResource {
     }
 
     /**
-     * Blocks a <code>target</code> for the authenticated <code>user</code>.
-     * Authenticated, required scope: {@link Scopes#USER_FOLLOWS_EDIT}
+     * Blocks a <code>target</code> for the authenticated <code>user</code>. Authenticated, required scope: {@link
+     * Scopes#USER_FOLLOWS_EDIT}
      *
      * @param user    the authenticated user
      * @param target  the user to block
      * @param handler the response handler
      */
     public void putBlock(final String user, final String target, final BlockResponseHandler handler) {
-        String url = String.format("%s/users/%s/blocks/%s", getBaseUrl(), user, target);
+        getId(user, new IdHttpResponseHandler() {
 
-        http.put(url, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
-            public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
-                try {
-                    Block value = objectMapper.readValue(content, Block.class);
-                    handler.onSuccess(value);
-                } catch (IOException e) {
-                    handler.onFailure(e);
-                }
+            public void onSuccess(int statusCode, Map<String, List<String>> headers, String userId) {
+                getId(target, new IdHttpResponseHandler() {
+
+                    @Override
+                    public void onSuccess(int statusCode, Map<String, List<String>> headers, String channelId) {
+                        String url = String.format("%s/users/%s/blocks/%s", getBaseUrl(), userId, channelId);
+
+                        http.put(url, new TwitchHttpResponseHandler(handler, objectMapper) {
+                            @Override
+                            public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
+                                try {
+                                    Block value = objectMapper.readValue(content, Block.class);
+                                    handler.onSuccess(value);
+                                } catch (IOException e) {
+                                    handler.onFailure(e);
+                                }
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, String statusMessage, String errorMessage) {
+                        handler.onFailure(statusCode, statusMessage, errorMessage);
+                    }
+
+                    @Override
+                    public void onFailure(Throwable throwable) {
+                        handler.onFailure(throwable);
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(int statusCode, String statusMessage, String errorMessage) {
+                handler.onFailure(statusCode, statusMessage, errorMessage);
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                handler.onFailure(throwable);
             }
         });
     }
 
     /**
-     * Removes the {@link Block} of <code>target</code> for the authenticated <code>user</code>.
-     * Authenticated, required scope: {@link Scopes#USER_FOLLOWS_EDIT}
+     * Removes the {@link Block} of <code>target</code> for the authenticated <code>user</code>. Authenticated, required
+     * scope: {@link Scopes#USER_FOLLOWS_EDIT}
      *
      * @param user    the authenticated user
      * @param target  the user to unblock
      * @param handler the response handler
      */
     public void deleteBlock(final String user, final String target, final UnblockResponseHandler handler) {
-        String url = String.format("%s/users/%s/blocks/%s", getBaseUrl(), user, target);
+        getId(user, new IdHttpResponseHandler() {
 
-        http.delete(url, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
-            public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
-                handler.onSuccess();
+            public void onSuccess(int statusCode, Map<String, List<String>> headers, String userId) {
+                getId(target, new IdHttpResponseHandler() {
+
+                    @Override
+                    public void onSuccess(int statusCode, Map<String, List<String>> headers, String channelId) {
+                        String url = String.format("%s/users/%s/blocks/%s", getBaseUrl(), userId, channelId);
+
+                        http.delete(url, new TwitchHttpResponseHandler(handler, objectMapper) {
+                            @Override
+                            public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
+                                handler.onSuccess();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, String statusMessage, String errorMessage) {
+                        handler.onFailure(statusCode, statusMessage, errorMessage);
+                    }
+
+                    @Override
+                    public void onFailure(Throwable throwable) {
+                        handler.onFailure(throwable);
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(int statusCode, String statusMessage, String errorMessage) {
+                handler.onFailure(statusCode, statusMessage, errorMessage);
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                handler.onFailure(throwable);
             }
         });
     }

@@ -6,21 +6,22 @@ import com.mb3364.twitch.api.handlers.EmoticonsResponseHandler;
 import com.mb3364.twitch.api.models.ChannelBadges;
 import com.mb3364.twitch.api.models.Emoticons;
 import com.mrivanplays.twitch.api.AsyncHttpClient;
+import com.mrivanplays.twitch.api.ChannelNameToID;
+import com.mrivanplays.twitch.api.IdHttpResponseHandler;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
 /**
- * The {@link ChatResource} provides the functionality
- * to access the <code>/chat</code> endpoints of the Twitch API.
+ * The {@link ChatResource} provides the functionality to access the <code>/chat</code> endpoints of the Twitch API.
  *
  * @author Matthew Bell
  */
 public class ChatResource extends AbstractResource {
 
-    public ChatResource(AsyncHttpClient httpClient, ObjectMapper objectMapper, String baseUrl, int apiVersion) {
-        super(httpClient, objectMapper, baseUrl, apiVersion);
+    public ChatResource(AsyncHttpClient httpClient, ObjectMapper objectMapper, ChannelNameToID channelNameToID, String baseUrl, int apiVersion) {
+        super(httpClient, objectMapper, channelNameToID, baseUrl, apiVersion);
     }
 
     /**
@@ -51,17 +52,33 @@ public class ChatResource extends AbstractResource {
      * @param handler the Response Handler
      */
     public void getBadges(final String channel, final BadgesResponseHandler handler) {
-        String url = String.format("%s/chat/%s/badges", getBaseUrl(), channel);
+        getId(channel, new IdHttpResponseHandler() {
 
-        http.get(url, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
-                try {
-                    ChannelBadges value = objectMapper.readValue(content, ChannelBadges.class);
-                    handler.onSuccess(value);
-                } catch (IOException e) {
-                    handler.onFailure(e);
-                }
+                String url = String.format("%s/chat/%s/badges", getBaseUrl(), content);
+
+                http.get(url, new TwitchHttpResponseHandler(handler, objectMapper) {
+                    @Override
+                    public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
+                        try {
+                            ChannelBadges value = objectMapper.readValue(content, ChannelBadges.class);
+                            handler.onSuccess(value);
+                        } catch (IOException e) {
+                            handler.onFailure(e);
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(int statusCode, String statusMessage, String errorMessage) {
+                handler.onFailure(statusCode, statusMessage, errorMessage);
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                handler.onFailure(throwable);
             }
         });
     }

@@ -7,6 +7,7 @@ import com.mb3364.twitch.api.handlers.VideosResponseHandler;
 import com.mb3364.twitch.api.models.Video;
 import com.mb3364.twitch.api.models.Videos;
 import com.mrivanplays.twitch.api.AsyncHttpClient;
+import com.mrivanplays.twitch.api.ChannelNameToID;
 import com.mrivanplays.twitch.api.RequestParams;
 
 import java.io.IOException;
@@ -21,8 +22,8 @@ import java.util.Map;
  */
 public class VideosResource extends AbstractResource {
 
-    public VideosResource(AsyncHttpClient httpClient, ObjectMapper objectMapper, String baseUrl, int apiVersion) {
-        super(httpClient, objectMapper, baseUrl, apiVersion);
+    public VideosResource(AsyncHttpClient httpClient, ObjectMapper objectMapper, ChannelNameToID channelNameToID, String baseUrl, int apiVersion) {
+        super(httpClient, objectMapper, channelNameToID, baseUrl, apiVersion);
     }
 
     /**

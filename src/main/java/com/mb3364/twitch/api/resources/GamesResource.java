@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mb3364.twitch.api.handlers.TopGamesResponseHandler;
 import com.mb3364.twitch.api.models.Games;
 import com.mrivanplays.twitch.api.AsyncHttpClient;
+import com.mrivanplays.twitch.api.ChannelNameToID;
 import com.mrivanplays.twitch.api.RequestParams;
 
 import java.io.IOException;
@@ -11,15 +12,14 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * The {@link GamesResource} provides the functionality
- * to access the <code>/games</code> endpoints of the Twitch API.
+ * The {@link GamesResource} provides the functionality to access the <code>/games</code> endpoints of the Twitch API.
  *
  * @author Matthew Bell
  */
 public class GamesResource extends AbstractResource {
 
-    public GamesResource(AsyncHttpClient httpClient, ObjectMapper objectMapper, String baseUrl, int apiVersion) {
-        super(httpClient, objectMapper, baseUrl, apiVersion);
+    public GamesResource(AsyncHttpClient httpClient, ObjectMapper objectMapper, ChannelNameToID channelNameToID, String baseUrl, int apiVersion) {
+        super(httpClient, objectMapper, channelNameToID, baseUrl, apiVersion);
     }
 
     /**

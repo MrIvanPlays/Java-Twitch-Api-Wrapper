@@ -11,6 +11,8 @@ import com.mb3364.twitch.api.models.StreamContainer;
 import com.mb3364.twitch.api.models.Streams;
 import com.mb3364.twitch.api.models.StreamsSummary;
 import com.mrivanplays.twitch.api.AsyncHttpClient;
+import com.mrivanplays.twitch.api.ChannelNameToID;
+import com.mrivanplays.twitch.api.IdHttpResponseHandler;
 import com.mrivanplays.twitch.api.RequestParams;
 
 import java.io.IOException;
@@ -25,8 +27,8 @@ import java.util.Map;
  */
 public class StreamsResource extends AbstractResource {
 
-    public StreamsResource(AsyncHttpClient httpClient, ObjectMapper objectMapper, String baseUrl, int apiVersion) {
-        super(httpClient, objectMapper, baseUrl, apiVersion);
+    public StreamsResource(AsyncHttpClient httpClient, ObjectMapper objectMapper, ChannelNameToID channelNameToID, String baseUrl, int apiVersion) {
+        super(httpClient, objectMapper, channelNameToID, baseUrl, apiVersion);
     }
 
     /**
@@ -37,17 +39,33 @@ public class StreamsResource extends AbstractResource {
      * @param handler     the response handler
      */
     public void get(final String channelName, final StreamResponseHandler handler) {
-        String url = String.format("%s/streams/%s", getBaseUrl(), channelName);
+        getId(channelName, new IdHttpResponseHandler() {
 
-        http.get(url, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
-                try {
-                    StreamContainer value = objectMapper.readValue(content, StreamContainer.class);
-                    handler.onSuccess(value.getStream());
-                } catch (IOException e) {
-                    handler.onFailure(e);
-                }
+                String url = String.format("%s/streams/%s", getBaseUrl(), content);
+
+                http.get(url, new TwitchHttpResponseHandler(handler, objectMapper) {
+                    @Override
+                    public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
+                        try {
+                            StreamContainer value = objectMapper.readValue(content, StreamContainer.class);
+                            handler.onSuccess(value.getStream());
+                        } catch (IOException e) {
+                            handler.onFailure(e);
+                        }
+                    }
+                });
+            }
+
+            @Override
+            public void onFailure(int statusCode, String statusMessage, String errorMessage) {
+                handler.onFailure(statusCode, statusMessage, errorMessage);
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                handler.onFailure(throwable);
             }
         });
     }
