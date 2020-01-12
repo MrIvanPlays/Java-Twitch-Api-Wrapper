@@ -1,6 +1,6 @@
 package com.mb3364.twitch.api.resources;
 
-import com.mb3364.http.RequestParams;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mb3364.twitch.api.auth.Scopes;
 import com.mb3364.twitch.api.handlers.FeaturedStreamResponseHandler;
 import com.mb3364.twitch.api.handlers.StreamResponseHandler;
@@ -10,27 +10,23 @@ import com.mb3364.twitch.api.models.FeaturedStreamContainer;
 import com.mb3364.twitch.api.models.StreamContainer;
 import com.mb3364.twitch.api.models.Streams;
 import com.mb3364.twitch.api.models.StreamsSummary;
+import com.mrivanplays.twitch.api.AsyncHttpClient;
+import com.mrivanplays.twitch.api.RequestParams;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
 /**
- * The {@link StreamsResource} provides the functionality
- * to access the <code>/streams</code> endpoints of the Twitch API.
+ * The {@link StreamsResource} provides the functionality to access the <code>/streams</code> endpoints of the Twitch
+ * API.
  *
  * @author Matthew Bell
  */
 public class StreamsResource extends AbstractResource {
 
-    /**
-     * Construct the resource using the Twitch API base URL and specified API version.
-     *
-     * @param baseUrl    the base URL of the Twitch API
-     * @param apiVersion the requested version of the Twitch API
-     */
-    public StreamsResource(String baseUrl, int apiVersion) {
-        super(baseUrl, apiVersion);
+    public StreamsResource(AsyncHttpClient httpClient, ObjectMapper objectMapper, String baseUrl, int apiVersion) {
+        super(httpClient, objectMapper, baseUrl, apiVersion);
     }
 
     /**
@@ -43,7 +39,7 @@ public class StreamsResource extends AbstractResource {
     public void get(final String channelName, final StreamResponseHandler handler) {
         String url = String.format("%s/streams/%s", getBaseUrl(), channelName);
 
-        http.get(url, new TwitchHttpResponseHandler(handler) {
+        http.get(url, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
                 try {
@@ -57,8 +53,8 @@ public class StreamsResource extends AbstractResource {
     }
 
     /**
-     * Returns a list of stream objects that are queried by a number of parameters
-     * sorted by number of viewers descending.
+     * Returns a list of stream objects that are queried by a number of parameters sorted by number of viewers
+     * descending.
      *
      * @param params  the optional request parameters:
      *                <ul>
@@ -73,7 +69,7 @@ public class StreamsResource extends AbstractResource {
     public void get(final RequestParams params, final StreamsResponseHandler handler) {
         String url = String.format("%s/streams", getBaseUrl());
 
-        http.get(url, params, new TwitchHttpResponseHandler(handler) {
+        http.get(url, params, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
                 try {
@@ -87,8 +83,8 @@ public class StreamsResource extends AbstractResource {
     }
 
     /**
-     * Returns a list of stream objects that are queried by a number of parameters
-     * sorted by number of viewers descending.
+     * Returns a list of stream objects that are queried by a number of parameters sorted by number of viewers
+     * descending.
      *
      * @param handler the response handler
      */
@@ -109,7 +105,7 @@ public class StreamsResource extends AbstractResource {
     public void getFeatured(final RequestParams params, final FeaturedStreamResponseHandler handler) {
         String url = String.format("%s/streams/featured", getBaseUrl());
 
-        http.get(url, params, new TwitchHttpResponseHandler(handler) {
+        http.get(url, params, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
                 try {
@@ -142,7 +138,7 @@ public class StreamsResource extends AbstractResource {
         RequestParams params = new RequestParams();
         params.put("game", game);
 
-        http.get(url, params, new TwitchHttpResponseHandler(handler) {
+        http.get(url, params, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
                 try {
@@ -163,7 +159,7 @@ public class StreamsResource extends AbstractResource {
     public void getSummary(final StreamsSummaryResponseHandler handler) {
         String url = String.format("%s/streams/summary", getBaseUrl());
 
-        http.get(url, new TwitchHttpResponseHandler(handler) {
+        http.get(url, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
                 try {
@@ -177,8 +173,8 @@ public class StreamsResource extends AbstractResource {
     }
 
     /**
-     * Returns a list of stream objects that the authenticated user is following.
-     * Authenticated, required scope: {@link Scopes#USER_READ}
+     * Returns a list of stream objects that the authenticated user is following. Authenticated, required scope: {@link
+     * Scopes#USER_READ}
      *
      * @param params  the optional request parameters:
      *                <ul>
@@ -190,7 +186,7 @@ public class StreamsResource extends AbstractResource {
     public void getFollowed(final RequestParams params, final StreamsResponseHandler handler) {
         String url = String.format("%s/streams/followed", getBaseUrl());
 
-        http.get(url, params, new TwitchHttpResponseHandler(handler) {
+        http.get(url, params, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
                 try {
@@ -204,8 +200,8 @@ public class StreamsResource extends AbstractResource {
     }
 
     /**
-     * Returns a list of stream objects that the authenticated user is following.
-     * Authenticated, required scope: {@link Scopes#USER_READ}
+     * Returns a list of stream objects that the authenticated user is following. Authenticated, required scope: {@link
+     * Scopes#USER_READ}
      *
      * @param handler the response handler
      */

@@ -1,10 +1,12 @@
 package com.mb3364.twitch.api.resources;
 
-import com.mb3364.http.RequestParams;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mb3364.twitch.api.handlers.ChannelsResponseHandler;
 import com.mb3364.twitch.api.handlers.GamesResponseHandler;
 import com.mb3364.twitch.api.handlers.StreamsResponseHandler;
 import com.mb3364.twitch.api.models.SearchResultContainer;
+import com.mrivanplays.twitch.api.AsyncHttpClient;
+import com.mrivanplays.twitch.api.RequestParams;
 
 import java.io.IOException;
 import java.util.List;
@@ -18,14 +20,8 @@ import java.util.Map;
  */
 public class SearchResource extends AbstractResource {
 
-    /**
-     * Construct the resource using the Twitch API base URL and specified API version.
-     *
-     * @param baseUrl    the base URL of the Twitch API
-     * @param apiVersion the requested version of the Twitch API
-     */
-    public SearchResource(String baseUrl, int apiVersion) {
-        super(baseUrl, apiVersion);
+    public SearchResource(AsyncHttpClient httpClient, ObjectMapper objectMapper, String baseUrl, int apiVersion) {
+        super(httpClient, objectMapper, baseUrl, apiVersion);
     }
 
     /**
@@ -43,7 +39,7 @@ public class SearchResource extends AbstractResource {
         String url = String.format("%s/search/channels", getBaseUrl());
         params.put("q", query);
 
-        http.get(url, params, new TwitchHttpResponseHandler(handler) {
+        http.get(url, params, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
                 try {
@@ -83,7 +79,7 @@ public class SearchResource extends AbstractResource {
         String url = String.format("%s/search/streams", getBaseUrl());
         params.put("q", query);
 
-        http.get(url, params, new TwitchHttpResponseHandler(handler) {
+        http.get(url, params, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
                 try {
@@ -121,7 +117,7 @@ public class SearchResource extends AbstractResource {
         params.put("q", query);
         params.put("type", "suggest");
 
-        http.get(url, params, new TwitchHttpResponseHandler(handler) {
+        http.get(url, params, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
                 try {

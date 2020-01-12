@@ -1,9 +1,24 @@
 package com.mb3364.twitch.api.resources;
 
-import com.mb3364.http.RequestParams;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mb3364.twitch.api.auth.Scopes;
-import com.mb3364.twitch.api.handlers.*;
-import com.mb3364.twitch.api.models.*;
+import com.mb3364.twitch.api.handlers.ChannelFollowsResponseHandler;
+import com.mb3364.twitch.api.handlers.ChannelResponseHandler;
+import com.mb3364.twitch.api.handlers.ChannelSubscriptionResponseHandler;
+import com.mb3364.twitch.api.handlers.ChannelSubscriptionsResponseHandler;
+import com.mb3364.twitch.api.handlers.CommercialResponseHandler;
+import com.mb3364.twitch.api.handlers.TeamsResponseHandler;
+import com.mb3364.twitch.api.handlers.UsersResponseHandler;
+import com.mb3364.twitch.api.handlers.VideosResponseHandler;
+import com.mb3364.twitch.api.models.Channel;
+import com.mb3364.twitch.api.models.ChannelFollows;
+import com.mb3364.twitch.api.models.ChannelSubscription;
+import com.mb3364.twitch.api.models.ChannelSubscriptions;
+import com.mb3364.twitch.api.models.Editors;
+import com.mb3364.twitch.api.models.Teams;
+import com.mb3364.twitch.api.models.Videos;
+import com.mrivanplays.twitch.api.AsyncHttpClient;
+import com.mrivanplays.twitch.api.RequestParams;
 
 import java.io.IOException;
 import java.util.List;
@@ -17,14 +32,8 @@ import java.util.Map;
  */
 public class ChannelsResource extends AbstractResource {
 
-    /**
-     * Construct the resource using the Twitch API base URL and specified API version.
-     *
-     * @param baseUrl    the base URL of the Twitch API
-     * @param apiVersion the requested version of the Twitch API
-     */
-    public ChannelsResource(String baseUrl, int apiVersion) {
-        super(baseUrl, apiVersion);
+    public ChannelsResource(AsyncHttpClient httpClient, ObjectMapper objectMapper, String baseUrl, int apiVersion) {
+        super(httpClient, objectMapper, baseUrl, apiVersion);
     }
 
     /**
@@ -36,7 +45,7 @@ public class ChannelsResource extends AbstractResource {
     public void get(final ChannelResponseHandler handler) {
         String url = String.format("%s/channel", getBaseUrl());
 
-        http.get(url, new TwitchHttpResponseHandler(handler) {
+        http.get(url, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
                 try {
@@ -58,7 +67,7 @@ public class ChannelsResource extends AbstractResource {
     public void get(final String channelName, final ChannelResponseHandler handler) {
         String url = String.format("%s/channels/%s", getBaseUrl(), channelName);
 
-        http.get(url, new TwitchHttpResponseHandler(handler) {
+        http.get(url, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
                 try {
@@ -81,7 +90,7 @@ public class ChannelsResource extends AbstractResource {
     public void getEditors(final String channelName, final UsersResponseHandler handler) {
         String url = String.format("%s/channels/%s/editors", getBaseUrl(), channelName);
 
-        http.get(url, new TwitchHttpResponseHandler(handler) {
+        http.get(url, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
                 try {
@@ -125,7 +134,7 @@ public class ChannelsResource extends AbstractResource {
             params.remove("delay");
         }
 
-        http.put(url, params, new TwitchHttpResponseHandler(handler) {
+        http.put(url, params, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
                 try {
@@ -148,7 +157,7 @@ public class ChannelsResource extends AbstractResource {
     public void resetStreamKey(final String channelName, final ChannelResponseHandler handler) {
         String url = String.format("%s/channels/%s/stream_key", getBaseUrl(), channelName);
 
-        http.delete(url, new TwitchHttpResponseHandler(handler) {
+        http.delete(url, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
                 try {
@@ -177,7 +186,7 @@ public class ChannelsResource extends AbstractResource {
         RequestParams params = new RequestParams();
         params.put("length", Integer.toString(length));
 
-        http.post(url, params, new TwitchHttpResponseHandler(handler) {
+        http.post(url, params, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
                 handler.onSuccess();
@@ -194,7 +203,7 @@ public class ChannelsResource extends AbstractResource {
     public void getTeams(final String channelName, final TeamsResponseHandler handler) {
         String url = String.format("%s/channels/%s/teams", getBaseUrl(), channelName);
 
-        http.get(url, new TwitchHttpResponseHandler(handler) {
+        http.get(url, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
                 try {
@@ -224,7 +233,7 @@ public class ChannelsResource extends AbstractResource {
     public void getFollows(final String channelName, final RequestParams params, final ChannelFollowsResponseHandler handler) {
         String url = String.format("%s/channels/%s/follows", getBaseUrl(), channelName);
 
-        http.get(url, params, new TwitchHttpResponseHandler(handler) {
+        http.get(url, params, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
                 try {
@@ -270,7 +279,7 @@ public class ChannelsResource extends AbstractResource {
     public void getVideos(final String channelName, final RequestParams params, final VideosResponseHandler handler) {
         String url = String.format("%s/channels/%s/videos", getBaseUrl(), channelName);
 
-        http.get(url, params, new TwitchHttpResponseHandler(handler) {
+        http.get(url, params, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
                 try {
@@ -313,7 +322,7 @@ public class ChannelsResource extends AbstractResource {
     public void getSubscriptions(final String channelName, final RequestParams params, final ChannelSubscriptionsResponseHandler handler) {
         String url = String.format("%s/channels/%s/subscriptions", getBaseUrl(), channelName);
 
-        http.get(url, params, new TwitchHttpResponseHandler(handler) {
+        http.get(url, params, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
                 try {
@@ -349,7 +358,7 @@ public class ChannelsResource extends AbstractResource {
     public void getSubscription(final String channelName, final String user, final ChannelSubscriptionResponseHandler handler) {
         String url = String.format("%s/channels/%s/subscriptions/%s", getBaseUrl(), channelName, user);
 
-        http.get(url, new TwitchHttpResponseHandler(handler) {
+        http.get(url, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
                 try {

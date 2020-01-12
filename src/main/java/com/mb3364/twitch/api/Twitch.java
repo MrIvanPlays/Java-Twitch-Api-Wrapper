@@ -1,10 +1,24 @@
 package com.mb3364.twitch.api;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mb3364.twitch.api.auth.Authenticator;
-import com.mb3364.twitch.api.resources.*;
+import com.mb3364.twitch.api.resources.AbstractResource;
+import com.mb3364.twitch.api.resources.ChannelsResource;
+import com.mb3364.twitch.api.resources.ChatResource;
+import com.mb3364.twitch.api.resources.GamesResource;
+import com.mb3364.twitch.api.resources.IngestsResource;
+import com.mb3364.twitch.api.resources.RootResource;
+import com.mb3364.twitch.api.resources.SearchResource;
+import com.mb3364.twitch.api.resources.StreamsResource;
+import com.mb3364.twitch.api.resources.TeamsResource;
+import com.mb3364.twitch.api.resources.UsersResource;
+import com.mb3364.twitch.api.resources.VideosResource;
+import com.mrivanplays.twitch.api.AsyncHttpClient;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import okhttp3.OkHttpClient;
 
 /**
  * Enables the ability to interact with the Twitch.tv REST API.
@@ -22,30 +36,31 @@ public class Twitch {
     /**
      * Constructs a Twitch application instance with a set API base URL and API version number.
      *
-     * @param baseUrl    the base URL of the Twitch API
-     * @param apiVersion the API version number to request
+     * @param httpClient the okhttp client to use
+     * @param jsonMapper the jackson json mapper to use
      */
-    public Twitch(String baseUrl, int apiVersion) {
+    public Twitch(OkHttpClient httpClient, ObjectMapper jsonMapper) {
         authenticator = new Authenticator(DEFAULT_BASE_URL);
         // Instantiate resource connectors
-        resources = new HashMap<String, AbstractResource>();
-        resources.put("channels", new ChannelsResource(DEFAULT_BASE_URL, DEFAULT_API_VERSION));
-        resources.put("chat", new ChatResource(DEFAULT_BASE_URL, DEFAULT_API_VERSION));
-        resources.put("games", new GamesResource(DEFAULT_BASE_URL, DEFAULT_API_VERSION));
-        resources.put("ingests", new IngestsResource(DEFAULT_BASE_URL, DEFAULT_API_VERSION));
-        resources.put("root", new RootResource(DEFAULT_BASE_URL, DEFAULT_API_VERSION));
-        resources.put("search", new SearchResource(DEFAULT_BASE_URL, DEFAULT_API_VERSION));
-        resources.put("streams", new StreamsResource(DEFAULT_BASE_URL, DEFAULT_API_VERSION));
-        resources.put("teams", new TeamsResource(DEFAULT_BASE_URL, DEFAULT_API_VERSION));
-        resources.put("users", new UsersResource(DEFAULT_BASE_URL, DEFAULT_API_VERSION));
-        resources.put("videos", new VideosResource(DEFAULT_BASE_URL, DEFAULT_API_VERSION));
+        AsyncHttpClient asyncHttpClient = new AsyncHttpClient(httpClient);
+        resources = new HashMap<>();
+        resources.put("channels", new ChannelsResource(asyncHttpClient, jsonMapper, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
+        resources.put("chat", new ChatResource(asyncHttpClient, jsonMapper, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
+        resources.put("games", new GamesResource(asyncHttpClient, jsonMapper, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
+        resources.put("ingests", new IngestsResource(asyncHttpClient, jsonMapper, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
+        resources.put("root", new RootResource(asyncHttpClient, jsonMapper, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
+        resources.put("search", new SearchResource(asyncHttpClient, jsonMapper, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
+        resources.put("streams", new StreamsResource(asyncHttpClient, jsonMapper, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
+        resources.put("teams", new TeamsResource(asyncHttpClient, jsonMapper, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
+        resources.put("users", new UsersResource(asyncHttpClient, jsonMapper, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
+        resources.put("videos", new VideosResource(asyncHttpClient, jsonMapper, DEFAULT_BASE_URL, DEFAULT_API_VERSION));
     }
 
     /**
      * Constructs a Twitch application instance.
      */
     public Twitch() {
-        this(DEFAULT_BASE_URL, DEFAULT_API_VERSION);
+        this(new OkHttpClient(), new ObjectMapper());
     }
 
     /**

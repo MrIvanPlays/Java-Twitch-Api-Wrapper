@@ -1,9 +1,11 @@
 package com.mb3364.twitch.api.resources;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mb3364.twitch.api.handlers.BadgesResponseHandler;
 import com.mb3364.twitch.api.handlers.EmoticonsResponseHandler;
 import com.mb3364.twitch.api.models.ChannelBadges;
 import com.mb3364.twitch.api.models.Emoticons;
+import com.mrivanplays.twitch.api.AsyncHttpClient;
 
 import java.io.IOException;
 import java.util.List;
@@ -17,14 +19,8 @@ import java.util.Map;
  */
 public class ChatResource extends AbstractResource {
 
-    /**
-     * Construct the resource using the Twitch API base URL and specified API version.
-     *
-     * @param baseUrl    the base URL of the Twitch API
-     * @param apiVersion the requested version of the Twitch API
-     */
-    public ChatResource(String baseUrl, int apiVersion) {
-        super(baseUrl, apiVersion);
+    public ChatResource(AsyncHttpClient httpClient, ObjectMapper objectMapper, String baseUrl, int apiVersion) {
+        super(httpClient, objectMapper, baseUrl, apiVersion);
     }
 
     /**
@@ -35,7 +31,7 @@ public class ChatResource extends AbstractResource {
     public void getEmoticons(final EmoticonsResponseHandler handler) {
         String url = String.format("%s/chat/emoticons", getBaseUrl());
 
-        http.get(url, new TwitchHttpResponseHandler(handler) {
+        http.get(url, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
                 try {
@@ -57,7 +53,7 @@ public class ChatResource extends AbstractResource {
     public void getBadges(final String channel, final BadgesResponseHandler handler) {
         String url = String.format("%s/chat/%s/badges", getBaseUrl(), channel);
 
-        http.get(url, new TwitchHttpResponseHandler(handler) {
+        http.get(url, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
                 try {

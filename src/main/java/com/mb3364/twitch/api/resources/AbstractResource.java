@@ -2,36 +2,40 @@ package com.mb3364.twitch.api.resources;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
-import com.mb3364.http.AsyncHttpClient;
-import com.mb3364.http.StringHttpResponseHandler;
 import com.mb3364.twitch.api.handlers.BaseFailureHandler;
 import com.mb3364.twitch.api.models.Error;
+import com.mrivanplays.twitch.api.AsyncHttpClient;
+import com.mrivanplays.twitch.api.StringHttpResponseHandler;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
 /**
- * AbstractResource is the abstract base class of a Twitch resource.
- * A resource provides the functionality to access the REST endpoints of the Twitch API.
+ * AbstractResource is the abstract base class of a Twitch resource. A resource provides the functionality to access the
+ * REST endpoints of the Twitch API.
  *
  * @author Matthew Bell
  */
 public abstract class AbstractResource {
 
-    protected static final ObjectMapper objectMapper = new ObjectMapper(); // can reuse
-    protected static final AsyncHttpClient http = new AsyncHttpClient(); // can reuse
+    protected final ObjectMapper objectMapper; // can reuse
+    protected final AsyncHttpClient http; // can reuse
     private final String baseUrl; // Base url for twitch rest api
 
     /**
      * Construct a resource using the Twitch API base URL and specified API version.
      *
-     * @param baseUrl    the base URL of the Twitch API
-     * @param apiVersion the requested version of the Twitch API
+     * @param httpClient   http client
+     * @param objectMapper object mapper
+     * @param baseUrl      the base URL of the Twitch API
+     * @param apiVersion   the requested version of the Twitch API
      */
-    protected AbstractResource(String baseUrl, int apiVersion) {
+    protected AbstractResource(AsyncHttpClient httpClient, ObjectMapper objectMapper, String baseUrl, int apiVersion) {
+        this.http = httpClient;
+        this.objectMapper = objectMapper;
         this.baseUrl = baseUrl;
-        http.setHeader("ACCEPT", "application/vnd.twitchtv.v" + Integer.toString(apiVersion) + "+json"); // Specify API version
+        http.setHeader("ACCEPT", "application/vnd.twitchtv.v" + apiVersion + "+json"); // Specify API version
         configureObjectMapper();
     }
 
@@ -39,12 +43,11 @@ public abstract class AbstractResource {
      * Configure the Jackson JSON {@link ObjectMapper} to properly parse the API responses.
      */
     private void configureObjectMapper() {
-        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
+        objectMapper.setPropertyNamingStrategy(PropertyNamingStrategy.SNAKE_CASE);
     }
 
     /**
-     * Sets the authentication access token to be included in the HTTP headers of each
-     * API request.
+     * Sets the authentication access token to be included in the HTTP headers of each API request.
      *
      * @param accessToken the user's authentication access token
      */
@@ -70,13 +73,21 @@ public abstract class AbstractResource {
     }
 
     /**
-     * Get the base URL to the Twitch API. Intended to be called by subclasses when generating
-     * their resource URL endpoint.
+     * Get the base URL to the Twitch API. Intended to be called by subclasses when generating their resource URL
+     * endpoint.
      *
      * @return the base URL to the Twitch API
      */
     protected String getBaseUrl() {
         return baseUrl;
+    }
+
+    public ObjectMapper getObjectMapper() {
+        return objectMapper;
+    }
+
+    public AsyncHttpClient getHttpClient() {
+        return http;
     }
 
     /**
@@ -86,9 +97,11 @@ public abstract class AbstractResource {
     protected static abstract class TwitchHttpResponseHandler extends StringHttpResponseHandler {
 
         private BaseFailureHandler apiHandler;
+        private ObjectMapper objectMapper;
 
-        public TwitchHttpResponseHandler(BaseFailureHandler apiHandler) {
+        public TwitchHttpResponseHandler(BaseFailureHandler apiHandler, ObjectMapper objectMapper) {
             this.apiHandler = apiHandler;
+            this.objectMapper = objectMapper;
         }
 
         @Override

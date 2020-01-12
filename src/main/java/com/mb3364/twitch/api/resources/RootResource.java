@@ -1,7 +1,9 @@
 package com.mb3364.twitch.api.resources;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mb3364.twitch.api.handlers.TokenResponseHandler;
 import com.mb3364.twitch.api.models.Root;
+import com.mrivanplays.twitch.api.AsyncHttpClient;
 
 import java.io.IOException;
 import java.util.List;
@@ -21,8 +23,8 @@ public class RootResource extends AbstractResource {
      * @param baseUrl    the base URL of the Twitch API
      * @param apiVersion the requested version of the Twitch API
      */
-    public RootResource(String baseUrl, int apiVersion) {
-        super(baseUrl, apiVersion);
+    public RootResource(AsyncHttpClient httpClient, ObjectMapper objectMapper, String baseUrl, int apiVersion) {
+        super(httpClient, objectMapper, baseUrl, apiVersion);
     }
 
     /**
@@ -34,7 +36,7 @@ public class RootResource extends AbstractResource {
     public void get(final TokenResponseHandler handler) {
         String url = String.format("%s/", getBaseUrl());
 
-        http.get(url, new TwitchHttpResponseHandler(handler) {
+        http.get(url, new TwitchHttpResponseHandler(handler, objectMapper) {
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
                 try {
