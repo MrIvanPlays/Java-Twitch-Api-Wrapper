@@ -3,6 +3,14 @@ JTAW is a complete asynchronous java wrapper for interaction with v3 of the [Twi
 
 Please feel free to report any issues or contribute code.
 
+## Installation
+Clone repo and then run `mvn install` where you've cloned it.
+
+Now you can use it in your maven projects as a normal dependency. 
+
+For gradle: clone repo and build the jar, add the dependency as a jar. Why do that? Because, `mavenLocal()` repository has some very strange behaviour on gradle,
+so that's why you may want to not use it. 
+
 ## Basics
 
 Using the wrapper is as simple as instantiating the `Twitch` object and then calling the appropriate endpoint functions.
