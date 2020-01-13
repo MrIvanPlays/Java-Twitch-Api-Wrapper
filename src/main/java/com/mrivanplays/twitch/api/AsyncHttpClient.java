@@ -88,9 +88,7 @@ public class AsyncHttpClient {
             requestBuilder.put(new FileRequestBody(requestParams));
         } else {
             byte[] content = requestParams.toEncodedString().getBytes();
-            requestBuilder.header("Content-Type", "application/x-www-form-urlencoded;charset=" + requestParams.getCharset().name())
-                    .header("Content-Length", Long.toString(content.length));
-            requestBuilder.put(RequestBody.create(MediaType.parse("application/x-www-form-urlencoded"), content));
+            requestBuilder.put(RequestBody.create(MediaType.get("application/x-www-form-urlencoded; charset=" + requestParams.getCharset().name()), content));
         }
         requestCall(requestBuilder.build(), responseHandler);
     }
@@ -101,9 +99,7 @@ public class AsyncHttpClient {
             requestBuilder.post(new FileRequestBody(requestParams));
         } else {
             byte[] content = requestParams.toEncodedString().getBytes();
-            requestBuilder.header("Content-Type", "application/x-www-form-urlencoded;charset=" + requestParams.getCharset().name())
-                    .header("Content-Length", Long.toString(content.length));
-            requestBuilder.post(RequestBody.create(MediaType.parse("application/x-www-form-urlencoded"), content));
+            requestBuilder.post(RequestBody.create(MediaType.get("application/x-www-form-urlencoded; charset=" + requestParams.getCharset().name()), content));
         }
         requestCall(requestBuilder.build(), responseHandler);
     }
