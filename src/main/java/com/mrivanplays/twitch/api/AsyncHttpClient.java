@@ -37,7 +37,7 @@ public class AsyncHttpClient {
     }
 
     private Request.Builder createNoPostOrPutRequest(String url, RequestParams requestParams) {
-        if (requestParams.size() > 0) {
+        if (requestParams != null && requestParams.size() > 0) {
             url = url + "?" + requestParams.toEncodedString();
         }
 
