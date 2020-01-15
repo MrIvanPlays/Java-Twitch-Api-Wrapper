@@ -2,12 +2,12 @@ package com.mrivanplays.twitch.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.mb3364.twitch.api.resources.AbstractResource;
+import com.mb3364.twitch.api.models.Error;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -24,14 +24,15 @@ public class ChannelNameToID {
         cache = new ConcurrentHashMap<>();
     }
 
-    public void getId(String channelName, ObjectMapper objectMapper, IdHttpResponseHandler responseHandler) {
+    public CompletableFuture<ChannelData> getId(String channelName, ObjectMapper objectMapper) {
+        CompletableFuture<ChannelData> future = new CompletableFuture<>();
         if (cache.containsKey(channelName)) {
-            responseHandler.onSuccess(200, new HashMap<>(), cache.get(channelName));
-            return;
+            future.complete(new ChannelData(200, cache.get(channelName)));
+            return future;
         }
         RequestParams requestParams = new RequestParams();
         requestParams.put("login", channelName);
-        httpClient.get("https://api.twitch.tv/helix/users", requestParams, new AbstractResource.TwitchHttpResponseHandler(responseHandler, objectMapper) {
+        httpClient.get("https://api.twitch.tv/helix/users", requestParams, new StringHttpResponseHandler() {
 
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
@@ -39,11 +40,32 @@ public class ChannelNameToID {
                     JsonNode node = objectMapper.readTree(content);
                     String id = node.get("data").get(0).get("id").asText();
                     cache.put(channelName, id);
-                    responseHandler.onSuccess(statusCode, headers, id);
+                    future.complete(new ChannelData(statusCode, id));
                 } catch (IOException e) {
-                    responseHandler.onFailure(e);
+                    future.completeExceptionally(e);
                 }
             }
+
+            @Override
+            public void onFailure(int statusCode, Map<String, List<String>> headers, String content) {
+                try {
+                    if (content.length() > 0) {
+                        Error error = objectMapper.readValue(content, Error.class);
+                        future.complete(new ChannelData(statusCode, error));
+                    } else {
+                        future.complete(new ChannelData(statusCode, new Error()));
+                    }
+                } catch (IOException e) {
+                    future.complete(new ChannelData(statusCode, e));
+                }
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                future.completeExceptionally(throwable);
+            }
         });
+
+        return future;
     }
 }

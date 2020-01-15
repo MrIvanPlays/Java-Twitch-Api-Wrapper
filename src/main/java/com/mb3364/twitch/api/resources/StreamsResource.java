@@ -12,7 +12,6 @@ import com.mb3364.twitch.api.models.Streams;
 import com.mb3364.twitch.api.models.StreamsSummary;
 import com.mrivanplays.twitch.api.AsyncHttpClient;
 import com.mrivanplays.twitch.api.ChannelNameToID;
-import com.mrivanplays.twitch.api.IdHttpResponseHandler;
 import com.mrivanplays.twitch.api.RequestParams;
 
 import java.io.IOException;
@@ -39,7 +38,7 @@ public class StreamsResource extends AbstractResource {
      * @param handler     the response handler
      */
     public void get(final String channelName, final StreamResponseHandler handler) {
-        getId(channelName, new IdHttpResponseHandler() {
+        getId(channelName, new TwitchHttpResponseHandler(handler, objectMapper) {
 
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
@@ -56,16 +55,6 @@ public class StreamsResource extends AbstractResource {
                         }
                     }
                 });
-            }
-
-            @Override
-            public void onFailure(int statusCode, String statusMessage, String errorMessage) {
-                handler.onFailure(statusCode, statusMessage, errorMessage);
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-                handler.onFailure(throwable);
             }
         });
     }

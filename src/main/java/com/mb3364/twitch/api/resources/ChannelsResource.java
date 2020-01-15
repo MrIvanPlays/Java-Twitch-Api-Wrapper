@@ -19,7 +19,6 @@ import com.mb3364.twitch.api.models.Teams;
 import com.mb3364.twitch.api.models.Videos;
 import com.mrivanplays.twitch.api.AsyncHttpClient;
 import com.mrivanplays.twitch.api.ChannelNameToID;
-import com.mrivanplays.twitch.api.IdHttpResponseHandler;
 import com.mrivanplays.twitch.api.RequestParams;
 
 import java.io.IOException;
@@ -67,7 +66,7 @@ public class ChannelsResource extends AbstractResource {
      * @param handler     the response handler
      */
     public void get(final String channelName, final ChannelResponseHandler handler) {
-        getId(channelName, new IdHttpResponseHandler() {
+        getId(channelName, new TwitchHttpResponseHandler(handler, objectMapper) {
 
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
@@ -85,16 +84,6 @@ public class ChannelsResource extends AbstractResource {
                     }
                 });
             }
-
-            @Override
-            public void onFailure(int statusCode, String statusMessage, String errorMessage) {
-                handler.onFailure(statusCode, statusMessage, errorMessage);
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-                handler.onFailure(throwable);
-            }
         });
     }
 
@@ -106,7 +95,7 @@ public class ChannelsResource extends AbstractResource {
      * @param handler     the response handler
      */
     public void getEditors(final String channelName, final UsersResponseHandler handler) {
-        getId(channelName, new IdHttpResponseHandler() {
+        getId(channelName, new TwitchHttpResponseHandler(handler, objectMapper) {
 
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
@@ -123,16 +112,6 @@ public class ChannelsResource extends AbstractResource {
                         }
                     }
                 });
-            }
-
-            @Override
-            public void onFailure(int statusCode, String statusMessage, String errorMessage) {
-                handler.onFailure(statusCode, statusMessage, errorMessage);
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-                handler.onFailure(throwable);
             }
         });
     }
@@ -151,7 +130,7 @@ public class ChannelsResource extends AbstractResource {
      * @param handler     the response handler
      */
     public void put(final String channelName, final RequestParams params, final ChannelResponseHandler handler) {
-        getId(channelName, new IdHttpResponseHandler() {
+        getId(channelName, new TwitchHttpResponseHandler(handler, objectMapper) {
 
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
@@ -184,16 +163,6 @@ public class ChannelsResource extends AbstractResource {
                     }
                 });
             }
-
-            @Override
-            public void onFailure(int statusCode, String statusMessage, String errorMessage) {
-                handler.onFailure(statusCode, statusMessage, errorMessage);
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-                handler.onFailure(throwable);
-            }
         });
     }
 
@@ -205,7 +174,7 @@ public class ChannelsResource extends AbstractResource {
      * @param handler     the response handler
      */
     public void resetStreamKey(final String channelName, final ChannelResponseHandler handler) {
-        getId(channelName, new IdHttpResponseHandler() {
+        getId(channelName, new TwitchHttpResponseHandler(handler, objectMapper) {
 
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
@@ -223,16 +192,6 @@ public class ChannelsResource extends AbstractResource {
                     }
                 });
             }
-
-            @Override
-            public void onFailure(int statusCode, String statusMessage, String errorMessage) {
-                handler.onFailure(statusCode, statusMessage, errorMessage);
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-                handler.onFailure(throwable);
-            }
         });
     }
 
@@ -247,7 +206,7 @@ public class ChannelsResource extends AbstractResource {
      * @param handler     the response handler
      */
     public void startCommercial(final String channelName, final int length, final CommercialResponseHandler handler) {
-        getId(channelName, new IdHttpResponseHandler() {
+        getId(channelName, new TwitchHttpResponseHandler(handler, objectMapper) {
 
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
@@ -263,16 +222,6 @@ public class ChannelsResource extends AbstractResource {
                     }
                 });
             }
-
-            @Override
-            public void onFailure(int statusCode, String statusMessage, String errorMessage) {
-                handler.onFailure(statusCode, statusMessage, errorMessage);
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-                handler.onFailure(throwable);
-            }
         });
     }
 
@@ -283,7 +232,7 @@ public class ChannelsResource extends AbstractResource {
      * @param handler     the response handler
      */
     public void getTeams(final String channelName, final TeamsResponseHandler handler) {
-        getId(channelName, new IdHttpResponseHandler() {
+        getId(channelName, new TwitchHttpResponseHandler(handler, objectMapper) {
 
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
@@ -300,16 +249,6 @@ public class ChannelsResource extends AbstractResource {
                         }
                     }
                 });
-            }
-
-            @Override
-            public void onFailure(int statusCode, String statusMessage, String errorMessage) {
-                handler.onFailure(statusCode, statusMessage, errorMessage);
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-                handler.onFailure(throwable);
             }
         });
     }
@@ -329,7 +268,7 @@ public class ChannelsResource extends AbstractResource {
      * @param handler     the response handler
      */
     public void getFollows(final String channelName, final RequestParams params, final ChannelFollowsResponseHandler handler) {
-        getId(channelName, new IdHttpResponseHandler() {
+        getId(channelName, new TwitchHttpResponseHandler(handler, objectMapper) {
 
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
@@ -346,16 +285,6 @@ public class ChannelsResource extends AbstractResource {
                         }
                     }
                 });
-            }
-
-            @Override
-            public void onFailure(int statusCode, String statusMessage, String errorMessage) {
-                handler.onFailure(statusCode, statusMessage, errorMessage);
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-                handler.onFailure(throwable);
             }
         });
     }
@@ -390,7 +319,7 @@ public class ChannelsResource extends AbstractResource {
      * @param handler     the response handler
      */
     public void getVideos(final String channelName, final RequestParams params, final VideosResponseHandler handler) {
-        getId(channelName, new IdHttpResponseHandler() {
+        getId(channelName, new TwitchHttpResponseHandler(handler, objectMapper) {
 
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
@@ -407,16 +336,6 @@ public class ChannelsResource extends AbstractResource {
                         }
                     }
                 });
-            }
-
-            @Override
-            public void onFailure(int statusCode, String statusMessage, String errorMessage) {
-                handler.onFailure(statusCode, statusMessage, errorMessage);
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-                handler.onFailure(throwable);
             }
         });
     }
@@ -448,7 +367,7 @@ public class ChannelsResource extends AbstractResource {
      * @param handler     the response handler
      */
     public void getSubscriptions(final String channelName, final RequestParams params, final ChannelSubscriptionsResponseHandler handler) {
-        getId(channelName, new IdHttpResponseHandler() {
+        getId(channelName, new TwitchHttpResponseHandler(handler, objectMapper) {
 
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
@@ -465,16 +384,6 @@ public class ChannelsResource extends AbstractResource {
                         }
                     }
                 });
-            }
-
-            @Override
-            public void onFailure(int statusCode, String statusMessage, String errorMessage) {
-                handler.onFailure(statusCode, statusMessage, errorMessage);
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-                handler.onFailure(throwable);
             }
         });
     }
@@ -500,11 +409,11 @@ public class ChannelsResource extends AbstractResource {
      * @param handler     the response handler
      */
     public void getSubscription(final String channelName, final String user, final ChannelSubscriptionResponseHandler handler) {
-        getId(channelName, new IdHttpResponseHandler() {
+        getId(channelName, new TwitchHttpResponseHandler(handler, objectMapper) {
 
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String userId) {
-                getId(user, new IdHttpResponseHandler() {
+                getId(user, new TwitchHttpResponseHandler(handler, objectMapper) {
 
                     @Override
                     public void onSuccess(int statusCode, Map<String, List<String>> headers, String channelId) {
@@ -522,27 +431,7 @@ public class ChannelsResource extends AbstractResource {
                             }
                         });
                     }
-
-                    @Override
-                    public void onFailure(int statusCode, String statusMessage, String errorMessage) {
-                        handler.onFailure(statusCode, statusMessage, errorMessage);
-                    }
-
-                    @Override
-                    public void onFailure(Throwable throwable) {
-                        handler.onFailure(throwable);
-                    }
                 });
-            }
-
-            @Override
-            public void onFailure(int statusCode, String statusMessage, String errorMessage) {
-                handler.onFailure(statusCode, statusMessage, errorMessage);
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-                handler.onFailure(throwable);
             }
         });
     }

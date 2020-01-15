@@ -6,10 +6,10 @@ import com.mb3364.twitch.api.handlers.BaseFailureHandler;
 import com.mb3364.twitch.api.models.Error;
 import com.mrivanplays.twitch.api.AsyncHttpClient;
 import com.mrivanplays.twitch.api.ChannelNameToID;
-import com.mrivanplays.twitch.api.IdHttpResponseHandler;
 import com.mrivanplays.twitch.api.StringHttpResponseHandler;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -94,15 +94,30 @@ public abstract class AbstractResource {
         return http;
     }
 
-    public void getId(String username, IdHttpResponseHandler responseHandler) {
-        channelNameToID.getId(username, objectMapper, responseHandler);
+    protected void getId(String username, TwitchHttpResponseHandler responseHandler) {
+        channelNameToID.getId(username, objectMapper).whenComplete((channelData, error) -> {
+            if (error != null) {
+                responseHandler.onFailure(error);
+                return;
+            }
+            if (channelData.isHttpError()) {
+                Error e = channelData.getHttpError();
+                responseHandler.onFailure(channelData.getStatusCode(), e.getStatusText(), e.getMessage());
+                return;
+            }
+            if (!channelData.isSuccessful()) {
+                responseHandler.onFailure(channelData.getException());
+                return;
+            }
+            responseHandler.onSuccess(channelData.getStatusCode(), new HashMap<>(), channelData.getChannelId());
+        });
     }
 
     /**
      * Handles HTTP response's from the Twitch API.
      * <p>Since all Http failure logic is the same, we handle it all in one place: here.</p>
      */
-    public static abstract class TwitchHttpResponseHandler extends StringHttpResponseHandler {
+    protected static abstract class TwitchHttpResponseHandler extends StringHttpResponseHandler {
 
         private BaseFailureHandler apiHandler;
         private ObjectMapper objectMapper;
@@ -132,6 +147,10 @@ public abstract class AbstractResource {
         @Override
         public void onFailure(Throwable throwable) {
             apiHandler.onFailure(throwable);
+        }
+
+        public void onFailure(int statusCode, String statusMessage, String errorMessage) {
+            apiHandler.onFailure(statusCode, statusMessage, errorMessage);
         }
     }
 }

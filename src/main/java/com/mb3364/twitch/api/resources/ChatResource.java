@@ -7,7 +7,6 @@ import com.mb3364.twitch.api.models.ChannelBadges;
 import com.mb3364.twitch.api.models.Emoticons;
 import com.mrivanplays.twitch.api.AsyncHttpClient;
 import com.mrivanplays.twitch.api.ChannelNameToID;
-import com.mrivanplays.twitch.api.IdHttpResponseHandler;
 
 import java.io.IOException;
 import java.util.List;
@@ -52,7 +51,7 @@ public class ChatResource extends AbstractResource {
      * @param handler the Response Handler
      */
     public void getBadges(final String channel, final BadgesResponseHandler handler) {
-        getId(channel, new IdHttpResponseHandler() {
+        getId(channel, new TwitchHttpResponseHandler(handler, objectMapper) {
 
             @Override
             public void onSuccess(int statusCode, Map<String, List<String>> headers, String content) {
@@ -69,16 +68,6 @@ public class ChatResource extends AbstractResource {
                         }
                     }
                 });
-            }
-
-            @Override
-            public void onFailure(int statusCode, String statusMessage, String errorMessage) {
-                handler.onFailure(statusCode, statusMessage, errorMessage);
-            }
-
-            @Override
-            public void onFailure(Throwable throwable) {
-                handler.onFailure(throwable);
             }
         });
     }

@@ -1,11 +1,15 @@
 package com.mrivanplays.twitch.api;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URLConnection;
+import java.util.Map;
 
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Headers;
 import okhttp3.MediaType;
+import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
@@ -85,7 +89,7 @@ public class AsyncHttpClient {
     public void put(String url, RequestParams requestParams, HttpResponseHandler responseHandler) {
         Request.Builder requestBuilder = createRequest(url);
         if (requestParams.hasFiles()) {
-            requestBuilder.put(new FileRequestBody(requestParams));
+            requestBuilder.put(createFileRequestBody(requestParams));
         } else {
             byte[] content = requestParams.toEncodedString().getBytes();
             requestBuilder.put(RequestBody.create(MediaType.get("application/x-www-form-urlencoded; charset=" + requestParams.getCharset().name()), content));
@@ -96,12 +100,35 @@ public class AsyncHttpClient {
     public void post(String url, RequestParams requestParams, HttpResponseHandler responseHandler) {
         Request.Builder requestBuilder = createRequest(url);
         if (requestParams.hasFiles()) {
-            requestBuilder.post(new FileRequestBody(requestParams));
+            requestBuilder.post(createFileRequestBody(requestParams));
         } else {
             byte[] content = requestParams.toEncodedString().getBytes();
             requestBuilder.post(RequestBody.create(MediaType.get("application/x-www-form-urlencoded; charset=" + requestParams.getCharset().name()), content));
         }
         requestCall(requestBuilder.build(), responseHandler);
+    }
+
+    private RequestBody createFileRequestBody(RequestParams params) {
+        MultipartBody.Builder builder = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM);
+
+        for (Map.Entry<String, String> entry : params.stringEntrySet()) {
+            Headers headers = new Headers.Builder()
+                    .set("Content-Disposition", "form-data; name=\"" + entry.getKey() + "\"")
+                    .build();
+            builder.addPart(headers, RequestBody.create(MediaType.get("text/plain; charset=" + params.getCharset().name()), entry.getValue()));
+        }
+
+        for (Map.Entry<String, File> fileEntry : params.fileEntrySet()) {
+            String fileName = fileEntry.getValue().getName();
+            builder.addFormDataPart(
+                    fileEntry.getKey(),
+                    fileName,
+                    RequestBody.create(MediaType.parse(URLConnection.guessContentTypeFromName(fileName)), fileEntry.getValue())
+            );
+        }
+
+        return builder.build();
     }
 
     public void delete(String url, HttpResponseHandler responseHandler) {
